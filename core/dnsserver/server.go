@@ -65,7 +65,8 @@ type Server struct {
 	stacktrace   bool                 // enable stacktrace in recover error log
 	classChaos   bool                 // allow non-INET class queries
 
-	tsigSecret map[string]string
+	tsigSecret    map[string]string
+	tsigAlgorithm map[string]string
 
 	// udpDecorateWriterFunc is selected in NewServer from the group configs in
 	// stable order (last one set wins), so the choice is deterministic when
@@ -94,6 +95,7 @@ func NewServer(addr string, group []*Config) (*Server, error) {
 		WriteTimeout:  5 * time.Second,
 		MaxTCPQueries: tcpMaxQueries,
 		tsigSecret:    make(map[string]string),
+		tsigAlgorithm: make(map[string]string),
 	}
 
 	for _, site := range group {
@@ -120,8 +122,9 @@ func NewServer(addr string, group []*Config) (*Server, error) {
 			s.MaxTCPQueries = *site.MaxTCPQueries
 		}
 
-		// copy tsig secrets
+		// copy tsig secrets, algorithms
 		maps.Copy(s.tsigSecret, site.TsigSecret)
+		maps.Copy(s.tsigAlgorithm, site.TsigAlgorithm)
 
 		// compile custom plugin for everything
 		var stack plugin.Handler
@@ -182,8 +185,8 @@ func (s *Server) Serve(l net.Listener) error {
 
 	s.server[tcp] = &dns.Server{Listener: l,
 		Net:           "tcp",
-		TsigSecret:    s.tsigSecret,
-		MaxTCPQueries: s.MaxTCPQueries,
+		TsigProvider:  NewTsigProvider(s.tsigSecret, s.tsigAlgorithm),
+		MaxTCPQueries: tcpMaxQueries,
 		ReadTimeout:   s.ReadTimeout,
 		WriteTimeout:  s.WriteTimeout,
 		IdleTimeout: func() time.Duration {
@@ -213,7 +216,7 @@ func (s *Server) ServePacket(p net.PacketConn) error {
 		ctx := context.WithValue(context.Background(), Key{}, s)
 		ctx = context.WithValue(ctx, LoopKey{}, 0)
 		s.ServeDNS(ctx, w, r)
-	}), TsigSecret: s.tsigSecret, DecorateWriter: dw}
+	}), TsigProvider: NewTsigProvider(s.tsigSecret, s.tsigAlgorithm), DecorateWriter: dw}
 	s.m.Unlock()
 
 	return s.server[udp].ActivateAndServe()

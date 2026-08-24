@@ -48,6 +48,11 @@ func setup(c *caddy.Controller) error {
 			var updateShutdownOnce sync.Once
 
 			c.OnStartup(func() error {
+				config := dnsserver.GetConfig(c)
+
+				z.TsigSecret = config.TsigSecret
+				z.TsigAlgorithm = config.TsigAlgorithm
+
 				z.StartupOnce.Do(func() {
 					go s.transferAndUpdate(n, z, x, updateShutdown)
 				})
