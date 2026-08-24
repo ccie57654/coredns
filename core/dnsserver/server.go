@@ -186,7 +186,7 @@ func (s *Server) Serve(l net.Listener) error {
 	s.server[tcp] = &dns.Server{Listener: l,
 		Net:           "tcp",
 		TsigProvider:  NewTsigProvider(s.tsigSecret, s.tsigAlgorithm),
-		MaxTCPQueries: tcpMaxQueries,
+		MaxTCPQueries: s.MaxTCPQueries,
 		ReadTimeout:   s.ReadTimeout,
 		WriteTimeout:  s.WriteTimeout,
 		IdleTimeout: func() time.Duration {

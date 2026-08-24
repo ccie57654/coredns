@@ -22,7 +22,6 @@ type TSIGServer struct {
 	opcodes    opCodes
 	allTypes   bool
 	allOpcodes bool
-	all        bool
 	Next       plugin.Handler
 }
 

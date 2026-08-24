@@ -2,7 +2,6 @@ package dnsserver
 
 import (
 	"crypto/hmac"
-	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/base64"
@@ -33,8 +32,6 @@ func (p *tsigProvider) Generate(msg []byte, t *dns.TSIG) ([]byte, error) {
 	}
 	var h hash.Hash
 	switch dns.CanonicalName(t.Algorithm) {
-	case dns.HmacSHA1:
-		h = hmac.New(sha1.New, rawsecret)
 	case dns.HmacSHA224:
 		h = hmac.New(sha256.New224, rawsecret)
 	case dns.HmacSHA256:

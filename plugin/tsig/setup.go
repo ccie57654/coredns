@@ -219,7 +219,7 @@ func parseKeyFile(f io.Reader) (map[string]string, map[string]string, error) {
 
 func validateAlgorithm(algorithm string) bool {
 	switch algorithm {
-	case dns.HmacSHA1, dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512:
+	case dns.HmacSHA224, dns.HmacSHA256, dns.HmacSHA384, dns.HmacSHA512:
 		return true
 	default:
 		return false
