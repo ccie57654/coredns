@@ -193,7 +193,7 @@ func parseKeyFile(f io.Reader) (map[string]string, map[string]string, error) {
 			algorithms[key] = dns.HmacSHA256
 		}
 	}
-	return secrets, algorithms, nil
+	return secrets, algorithms, s.Err()
 }
 
 func validateAlgorithm(algorithm string) bool {
